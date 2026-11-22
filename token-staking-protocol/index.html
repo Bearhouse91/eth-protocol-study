@@ -1,0 +1,116 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>StakeCoin & YieldCoin — DeFi Staking</title>
+<style>body{background:#070913;color:#f8fafc;font-family:'Inter',system-ui,sans-serif;padding:36px;margin:0}
+.wrap{max-width:920px;margin:auto}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;border-bottom:1px solid #1e293b;padding-bottom:18px}
+.pill{background:rgba(0,245,212,0.1);border:1px solid #00f5d4;color:#00f5d4;padding:6px 14px;border-radius:999px;font-size:12px;font-weight:700}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.box{background:#0e1324;border:1px solid #1e293b;border-radius:14px;padding:18px}
+.label{font-size:12px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em}
+.val{font-size:22px;font-weight:800;margin-top:6px;font-variant-numeric:tabular-nums}
+.neon-green{color:#00f5d4;text-shadow:0 0 14px rgba(0,245,212,0.35)}
+.neon-pink{color:#f72585}
+.panels{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.card{background:#0e1324;border:1px solid #1e293b;border-radius:16px;padding:22px}
+input{width:100%;padding:12px;border-radius:10px;border:1px solid #334155;background:#070913;color:#fff;font-size:15px;box-sizing:border-box;margin-bottom:12px}
+.row{display:flex;gap:10px}
+button{flex:1;padding:12px;border-radius:10px;border:none;font-weight:700;font-size:14px;cursor:pointer}
+.btn-stake{background:#00f5d4;color:#070913}
+.btn-withdraw{background:#1e293b;color:#f8fafc}
+.btn-mint{background:#7209b7;color:#fff;margin-top:10px;width:100%}
+.btn-claim{background:linear-gradient(90deg,#f72585,#7209b7);color:#fff;width:100%;margin-top:14px;font-size:15px}</style></head>
+<body><div class="wrap">
+<div class="top"><div><h1 style="margin:0">⚡ StakeCoin → YieldCoin Vault</h1><p style="margin:6px 0 0;color:#94a3b8;font-size:14px">BigInt Real-Time Accrual · OpenZeppelin-Style Accounting</p></div>
+<span class="pill">REWARD_RATE: 1.5 YLD/s</span></div>
+<div class="stats">
+<div class="box"><div class="label">StakeCoin (STK) Bal</div><div class="val" id="stkBal">1000.0000</div></div>
+<div class="box"><div class="label">Staked STK</div><div class="val neon-pink" id="stakedVal">250.0000</div></div>
+<div class="box"><div class="label">Pending YieldCoin</div><div class="val neon-green" id="pendingVal">0.000000</div></div>
+<div class="box"><div class="label">YieldCoin (YLD) Bal</div><div class="val" id="yldBal">120.000000</div></div></div>
+<div class="panels">
+<div class="card"><h3 style="margin-top:0">💎 Stake / Withdraw STK</h3>
+<input id="amtInput" type="number" step="1" value="50" placeholder="Amount in STK">
+<div class="row"><button class="btn-stake" id="stakeBtn">Stake STK</button><button class="btn-withdraw" id="withdrawBtn">Withdraw</button></div>
+<button class="btn-mint" id="mintBtn">🧪 Public Mint +500 STK (Testnet Faucet)</button></div>
+<div class="card"><h3 style="margin-top:0">🎁 YieldCoin Rewards</h3>
+<p style="color:#94a3b8;font-size:13px;line-height:1.5">Rewards accrue every second using integer BigInt math mirroring Solidity <code>earned()</code>. Claiming immediately resets pending rewards and refreshes YLD balance.</p>
+<button class="btn-claim" id="claimBtn">⚡ Claim YieldCoin Rewards</button></div>
+</div></div>
+<script>
+const SCALE = 1000000n;
+const rewardRateMicro = 1500000n; // 1.5 YLD/s in micro-units
+let totalStakedMicro = 250000000n;
+let stkBalMicro = 1000000000n;
+let stakedMicro = 250000000n;
+let yldBalMicro = 120000000n;
+let storedRewardMicro = 0n;
+let lastTickMs = Date.now();
+
+function fmt6(v) {
+  const neg = v < 0n ? "-" : "";
+  const abs = v < 0n ? -v : v;
+  const whole = abs / SCALE;
+  const frac = (abs % SCALE).toString().padStart(6, "0");
+  return `${neg}${whole}.${frac}`;
+}
+
+function fmt4(v) {
+  const whole = v / SCALE;
+  const frac = ((v % SCALE) / 100n).toString().padStart(4, "0");
+  return `${whole}.${frac}`;
+}
+
+function currentPendingMicro(nowMs) {
+  if (totalStakedMicro === 0n || stakedMicro === 0n) return storedRewardMicro;
+  const elapsedSec = BigInt(Math.max(0, Math.floor((nowMs - lastTickMs) / 1000)));
+  const accrued = (elapsedSec * rewardRateMicro * stakedMicro) / totalStakedMicro;
+  return storedRewardMicro + accrued;
+}
+
+function render() {
+  const pending = currentPendingMicro(Date.now());
+  document.getElementById("stkBal").textContent = fmt4(stkBalMicro);
+  document.getElementById("stakedVal").textContent = fmt4(stakedMicro);
+  document.getElementById("pendingVal").textContent = fmt6(pending);
+  document.getElementById("yldBal").textContent = fmt6(yldBalMicro);
+}
+
+function checkpoint() {
+  storedRewardMicro = currentPendingMicro(Date.now());
+  lastTickMs = Date.now();
+}
+
+document.getElementById("mintBtn").onclick = () => {
+  stkBalMicro += 500n * SCALE;
+  render();
+};
+document.getElementById("stakeBtn").onclick = () => {
+  const amt = BigInt(Math.max(0, Number(document.getElementById("amtInput").value || 0))) * SCALE;
+  if (amt > 0n && stkBalMicro >= amt) {
+    checkpoint();
+    stkBalMicro -= amt;
+    stakedMicro += amt;
+    totalStakedMicro += amt;
+    render();
+  }
+};
+document.getElementById("withdrawBtn").onclick = () => {
+  const amt = BigInt(Math.max(0, Number(document.getElementById("amtInput").value || 0))) * SCALE;
+  if (amt > 0n && stakedMicro >= amt) {
+    checkpoint();
+    stakedMicro -= amt;
+    totalStakedMicro -= amt;
+    stkBalMicro += amt;
+    render();
+  }
+};
+document.getElementById("claimBtn").onclick = () => {
+  const claimed = currentPendingMicro(Date.now());
+  yldBalMicro += claimed;
+  storedRewardMicro = 0n;
+  lastTickMs = Date.now();
+  render();
+};
+
+setInterval(render, 250);
+render();
+</script></body></html>

@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   11155111: {
     Voting: {
-      address: "0xbc0ded3f38d9d8edf29e03cfe77d9944a8d2688e",
+      address: "0xb9633b7d6903a11dde7c254bdd80657d89644308",
       abi: [
         {
           inputs: [
@@ -371,7 +371,7 @@ const deployedContracts = {
         renounceOwnership: "npm/@openzeppelin/contracts@5.7.0/access/Ownable.sol",
         transferOwnership: "npm/@openzeppelin/contracts@5.7.0/access/Ownable.sol",
       },
-      deployedOnBlock: 12133644,
+      deployedOnBlock: 12189634,
     },
   },
 } as const;

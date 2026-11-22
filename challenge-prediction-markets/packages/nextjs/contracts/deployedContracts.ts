@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   11155111: {
     PredictionMarket: {
-      address: "0x16c30bc7cd1bdc747c7f6089df40674b8a2a3df7",
+      address: "0xa754606810f9f98b348ed1ff8476f920e13cc024",
       abi: [
         {
           inputs: [
@@ -793,10 +793,10 @@ const deployedContracts = {
         renounceOwnership: "npm/@openzeppelin/contracts@5.7.0/access/Ownable.sol",
         transferOwnership: "npm/@openzeppelin/contracts@5.7.0/access/Ownable.sol",
       },
-      deployedOnBlock: 12131084,
+      deployedOnBlock: 12189606,
     },
     PredictionMarketTokenNo: {
-      address: "0x15e1Dbf32d0453249Fc144b03f5767afCe34C17B",
+      address: "0xbF5F570Dfd43FFD8c8FcCBF3B1ab44b38F3f876F",
       abi: [
         {
           inputs: [
@@ -1213,7 +1213,7 @@ const deployedContracts = {
       inheritedFunctions: {},
     },
     PredictionMarketTokenYes: {
-      address: "0xAa3824251DdAE88e7ebbaeaC70335Affb3Eb8108",
+      address: "0xF79C85a8b993A058D0df329549bdD9aEE50A519C",
       abi: [
         {
           inputs: [
